@@ -4,7 +4,7 @@ import Header from "./Header";
 import { IoSend } from "react-icons/io5";
 import { ImSpinner3 } from "react-icons/im"; // Ensure you have react-bootstrap installed
 
-const socket = io("http://localhost:5000");
+const socket = io("https://blinkchat-p53w.onrender.com");
 
 const ChatHome = () => {
   const [messages, setMessages] = useState([]);
