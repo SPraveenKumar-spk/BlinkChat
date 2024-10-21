@@ -7,13 +7,21 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:5173", // Adjust this to your frontend URL
+    origin: "https://letsblinkchat.vercel.app", // Adjust this to your frontend URL
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-app.use(cors());
+const corsOptions = {
+  origin: "https://letsblinkchat.vercel.app", // Replace with your client URL
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  credentials: true, // Allow cookies to be sent in cross-origin requests
+};
+
+// Use CORS with the specified options
+app.use(cors(corsOptions));
 
 let waitingQueue = [];
 const activeConnections = {}; // Stores socket IDs mapped to rooms
