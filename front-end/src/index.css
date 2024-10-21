@@ -1,0 +1,38 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html{
+ ::-webkit-scrollbar {
+    display: none;
+}
+}
+
+.user-bubble {
+  position: relative;
+}
+
+.user-bubble::after {
+  content: "";
+  position: absolute;
+  right: -10px; /* Adjust to move the arrow closer */
+  top: 10px;
+  border-width: 0 20px 20px 10px; /* Adjusted for steeper slope */
+  border-style: solid;
+  border-color: transparent #007bff transparent transparent;
+}
+
+.stranger-bubble {
+  position: relative;
+}
+
+.stranger-bubble::before {
+  content: "";
+  position: absolute;
+  left: -12px; /* Adjust to move the arrow closer */
+  top: 10px;
+  border-width: 20px 20px 0 0; /* Adjusted for steeper slope */
+  border-style: solid;
+  border-color: #e0e0e0 transparent transparent transparent;
+}
