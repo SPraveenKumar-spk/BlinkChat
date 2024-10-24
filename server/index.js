@@ -7,20 +7,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "https://letsblinkchat.vercel.app", // Adjust this to your frontend URL
+    origin: "https://letsblinkchat.vercel.app",
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 const corsOptions = {
-  origin: "https://letsblinkchat.vercel.app", // Replace with your client URL
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed HTTP methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-  credentials: true, // Allow cookies to be sent in cross-origin requests
+  origin: "https://letsblinkchat.vercel.app",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
-// Use CORS with the specified options
+
 app.use(cors(corsOptions));
 
 let waitingQueue = [];

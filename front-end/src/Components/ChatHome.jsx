@@ -2,8 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import Header from "./Header";
 import { IoSend } from "react-icons/io5";
-import { ImSpinner3 } from "react-icons/im"; // Ensure you have react-bootstrap installed
-
 const socket = io("https://blinkchat-p53w.onrender.com");
 
 const ChatHome = () => {
@@ -12,9 +10,8 @@ const ChatHome = () => {
   const [chatRoom, setChatRoom] = useState(null);
   const [isConnectedToChat, setIsConnectedToChat] = useState(false);
   const [peerConnection, setPeerConnection] = useState(null);
-  const [isSearching, setIsSearching] = useState(true); // Track loading state for remote video
-  const [quote, setQuote] = useState("Searching for a stranger..."); // Placeholder quote
-
+  const [isSearching, setIsSearching] = useState(true);
+  const quote = "Searching";
   const messagesEndRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -60,7 +57,8 @@ const ChatHome = () => {
     pc.ontrack = (event) => {
       console.log("remote videoref", event.streams[0]);
       remoteVideoRef.current.srcObject = event.streams[0];
-      setIsSearching(false); // Stop showing loading
+      // Stop showing loading
+      setIsSearching(false);
     };
 
     navigator.mediaDevices
@@ -117,6 +115,7 @@ const ChatHome = () => {
       socket.off("offer");
       socket.off("answer");
       socket.off("ice-candidate");
+      setIsSearching(true);
     };
   }, [chatRoom]);
 
@@ -146,14 +145,15 @@ const ChatHome = () => {
     setMessages([]);
     setChatRoom(null);
     setIsConnectedToChat(false);
-    setIsSearching(true);
 
     // Clear remote video
     if (remoteVideoRef.current.srcObject) {
       remoteVideoRef.current.srcObject.getTracks().forEach((track) => {
         track.stop();
       });
+
       remoteVideoRef.current.srcObject = null;
+      setIsSearching(true);
     }
 
     socket.connect();
@@ -179,161 +179,132 @@ const ChatHome = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === "Escape") {
+        handleNewStranger();
+      }
+    };
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [peerConnection]);
+
+  console.log(isSearching);
+
   return (
     <>
       <Header />
       <main className="d-flex flex-wrap" style={{ height: "90vh" }}>
-        <div
-          className="d-flex flex-column justify-content-between"
-          style={{ width: "25%", height: "100%" }}
-        >
-          <div className="d-flex flex-column justify-content-between">
-            <div
-              className="card rounded-0 border-0 mb-1 bg-secondary"
-              style={{ height: "21rem" }}
-            >
-              <div className="card-body p-0">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  muted
-                  className="w-100 h-100"
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            </div>
-            <div
-              className="card rounded-0 border-0 bg-secondary"
-              style={{ height: "21.8rem" }}
-            >
-              <div className="card-body p-0 position-relative">
-                {/* {isSearching ? (
-                  <div className="d-flex flex-column align-items-center justify-content-center h-100">
-                    <ImSpinner3 />
-                    <p>{quote}</p>
-                  </div>
-                ) : ( */}
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  muted
-                  className="w-100 h-100"
-                  style={{ objectFit: "cover" }}
-                />
-                {/* )} */}
-              </div>
+        <div className="col-lg-3 col-md-4 p-2 mobile-relative">
+          <div className="card border-0 mb-0 mb-md-3 overflow-hidden">
+            <div className="card-body p-0">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                className="w-100 h-100 object-fit-cover"
+              />
             </div>
           </div>
-        </div>
-
-        <div className="container d-flex flex-column" style={{ width: "50%" }}>
-          <div className="row flex-grow-1 justify-content-center">
-            <div className="col">
-              <div className="card shadow-none rounded-0 border-0">
+          <div className="card overflow-hidden mobile-absolute h-50 border-0">
+            <div className="card-body p-0">
+              {isSearching && (
                 <div
-                  className="card-body overflow-auto"
-                  style={{ height: "80vh" }}
+                  className="d-flex flex-column align-items-center justify-content-center h-100 position-absolute"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.8)",
+                    width: "100%",
+                    height: "100%",
+                    zIndex: 10,
+                  }}
                 >
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`d-flex flex-column ${
-                        message.id === socket.id
-                          ? "align-items-end"
-                          : message.id === "system"
-                          ? "align-items-center"
-                          : "align-items-start"
-                      }`}
-                    >
-                      {message.id === "system" ? (
-                        <span
-                          className={`small fs-5 p-3 fw-bold mb-2 ${
-                            message.type === "connected"
-                              ? "bg-success"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {message.text}
-                        </span>
-                      ) : (
-                        <>
-                          <span
-                            className={`small mb-1 fw-bold ${
-                              message.id === socket.id
-                                ? "text-success"
-                                : "text-danger"
-                            }`}
-                          >
-                            {message.id === socket.id ? "You:" : "Stranger:"}
-                          </span>
-                          <div
-                            className={`d-flex flex-row ${
-                              message.id === socket.id
-                                ? "justify-content-end"
-                                : "justify-content-start"
-                            }`}
-                          >
-                            <div>
-                              <p
-                                className={`ps-4 pe-4 p-3 ms-3 mb-1 rounded-3 fs-3 ${
-                                  message.id === socket.id
-                                    ? "bg-primary text-white user-bubble"
-                                    : "bg-light stranger-bubble"
-                                }`}
-                              >
-                                {message.text}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
+                  {/* <ImSpinner3 className="spinner" /> */}
+                  <p>{quote}</p>
                 </div>
-                <div className="card-footer d-flex align-items-center gap-3">
-                  <div>
-                    <button
-                      className="btn btn-outline-primary fs-5 fw-bold lh-1"
-                      onClick={handleNewStranger}
-                      disabled={!isConnectedToChat}
-                    >
-                      New Stranger
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Enter message"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={!isConnectedToChat}
-                  />
-                  <div>
-                    <IoSend
-                      size={35}
-                      color="blue"
-                      style={{ cursor: "pointer" }}
-                      onClick={handleSendMessage}
-                      disabled={!isConnectedToChat}
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="w-100 h-100 object-fit-cover"
+              />
             </div>
           </div>
         </div>
 
-        <div
-          className="d-flex flex-column"
-          style={{ width: "25%", height: "100%" }}
-        >
-          <div className="flex-grow-1 bg-light d-flex align-items-center justify-content-center">
-            Ad 1
-          </div>
-          <div className="flex-grow-1 bg-light d-flex align-items-center justify-content-center">
-            Ad 2
+        <div className="col-lg-6 col-md-8 p-2 chat-container">
+          <div className="card h-100">
+            <div className="card-body overflow-auto" style={{ height: "80vh" }}>
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`d-flex flex-column ${
+                    message.id === socket.id
+                      ? "align-items-end"
+                      : message.id === "system"
+                      ? "align-items-center"
+                      : "align-items-start"
+                  }`}
+                >
+                  {message.id === "system" ? (
+                    <span
+                      className={`small fw-bold mb-2 ${
+                        message.type === "connected"
+                          ? "bg-success text-white"
+                          : "bg-danger text-white"
+                      } pt-2 pb-2 ps-1 pe-1 rounded`}
+                    >
+                      {message.text}
+                    </span>
+                  ) : (
+                    <>
+                      <span
+                        className={`small fw-bold ${
+                          message.id === socket.id
+                            ? "text-success"
+                            : "text-danger"
+                        }`}
+                      >
+                        {message.id === socket.id ? "You:" : "Stranger:"}
+                      </span>
+                      <p
+                        className={`pt-1 pb-1 ps-2 pe-2 mb-2 position-relative ${
+                          message.id === socket.id
+                            ? "bg-primary text-white right"
+                            : "bg-secondary text-black left"
+                        }`}
+                      >
+                        {message.text}
+                      </p>
+                    </>
+                  )}
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className="card-footer d-flex align-items-center gap-3">
+              <button
+                className="btn btn-outline-primary"
+                onClick={handleNewStranger}
+              >
+                New
+              </button>
+
+              <input
+                autoFocus={true}
+                type="text"
+                className="form-control"
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <button className="btn btn-primary" onClick={handleSendMessage}>
+                <IoSend />
+              </button>
+            </div>
           </div>
         </div>
       </main>

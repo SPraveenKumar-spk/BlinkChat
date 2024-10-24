@@ -1,21 +1,24 @@
 import React from "react";
 import logo from "../assets/logo.svg";
+
 const Header = () => {
   return (
-    <header
+    <nav
+      className="navbar navbar-expand-lg navbar-light bg-light"
       style={{ height: "10vh" }}
-      className="d-flex justify-content-between ps-5 pe-5 align-items-center bg-dark"
     >
-      <div className="d-flex">
+      <div className="ms-5">
         <img
+          className="img"
           src={logo}
           alt="logo"
-          style={{ width: "3rem" }}
-          className="me-2 bg-transparent"
+          style={{ width: "3rem", marginRight: "1rem" }}
         />
-        <h1 className="text-light">BlinkChat</h1>
+        <a className="navbar-brand" href="#">
+          BlinkChat
+        </a>
       </div>
-    </header>
+    </nav>
   );
 };
 
